@@ -1,11 +1,11 @@
 <html>
 <head>
 
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script>
 window.onload = function () {
-document.getElementById("myBtn").click(); };
+document.getElementById("#myBtn").click(); };
 </script>
 
 
@@ -74,12 +74,12 @@ body {font-family: Arial, Helvetica, sans-serif;}
    }  
 </style>
 
-<link rel="stylesheet" href="fade.css">
-<link rel="stylesheet" href="fadetext.css">
+<link rel="stylesheet" href="#fade.css">
+<link rel="stylesheet" href="#fadetext.css">
 <title>Ben Weller | Portfolio</title>
 <style>
 body  {
-  background-image: url("images/2.JPG");
+  background-image: url("images/BG.png");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-position: left;
@@ -96,10 +96,29 @@ body  {
 @font-face {
     font-family: "text";
     src: url(ITCKRIST.TTF) format("truetype");
+	text-align: center;
 }
+
 p {
-  font-size: 25px;
-  color: black
+  font-size: 20px;
+  color: white
+}
+
+p.text { 
+    font-family: "text", Verdana, Tahoma;
+}
+</style>
+
+<style type="gallerythumb/css">
+@font-face {
+    font-family: "text";
+    src: url(ITCKRIST.TTF) format("truetype");
+	text-align: center;
+}
+
+p {
+  font-size: 30px;
+  color: yellow
 }
 
 p.text { 
@@ -115,91 +134,89 @@ p.text {
 
 
 
+
+
 </head>
 <body>
-<div class="qr">
+<div class="qr"><p hidden>
 <img src="images/examples/QR.png" height="100" width="100">
-</div>
+</div></p>
 
 <div class="footer"><a href="https://www.facebook.com/ben.weller.91" target="_blank" alt="Ben's Facebook"><img src="images/fbicon.webp" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://www.instagram.com/bweller91" target="_blank" alt="Ben's Facebook"><img src="images/instaicon.png" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mailto:wellerben91@gmail.com?subject=Website Message" target="_blank" alt="Email Me"><img src="images/emailicon.png" width="50" height="50"></a></div>
-<div class="fade-in">
-<center><img src="images/title.png"></center>
 </div>
 <br>
 <br>
 
 
 <div class="fade-in-text">
-&nbsp;
-&nbsp;
-<img src="images/aboutmyself.png">
-<p class="text">
-I'm Ben 31 from Heathfield, East Sussex. I'm technically minded and have always been around technology and electronics throught my childhood, from configuring specific software on various devices to wiring electrical looms for motor vehicles.
+<center>
 <br>
 <br>
-I have worked as an electrical engineer & IT Systems Administrator for a small contract electronics manufacturing company for 10 years
+<table width="100%" border="0" align="center">
+  <tr>
+    <th scope="col"><img src="images/title.png" alt="">
+      <table width="549" height="27" border="0
+ " align="center">
+      <tr>
+        <th scope="col"><a href="#aboutmyself"><img src="images/aboutmyself.png" alt="" width="210" height="40"></a></th>
+        <th scope="col"><a href="#personalach"><img src="images/personalach.png" alt="" width="210" height="40"></a></th>
+        <th scope="col"><a href="#interests"><img src="images/interests.png" alt="" width="210" height="40"></a></th>
+        <th scope="col"><a href="#gallery"><img src="images/gallery.png" alt="" width="210" height="40"></a></th>
+      </tr>
+    </table></th>
+  </tr>
+  <tr>
+    <th scope="col"><p class="text">&nbsp;</p>
+      <p class="text">&nbsp;</p>
+      <p class="text">&nbsp;</p>
+      <p class="text"><img src="images/aboutmyself.png" alt="" id="aboutmyself" footer></p>
+      <p class="text"> I'm Ben 31 from Heathfield, East Sussex. I'm technically minded and have always been around technology and electronics throught my childhood, from configuring specific software on various devices to wiring electrical looms for motor vehicles. <br>
+        <br>
+        I have worked as an electrical engineer & IT Systems Administrator for a small contract electronics manufacturing company for 10 years <br>
+        <br>
+        I'm now a Rolling Stock Engineer working for Siemens Mobility Ltd, maintaining the Class 700 Desiro City Thameslink Fleet trains for GTR Railway. </p>    </th>
+  </tr>
+  <tr>
+    <th scope="col">&nbsp;</th>
+  </tr>
+  <tr>
+    <th scope="col">&nbsp;</th>
+  </tr>
+  <tr>
+    <th scope="col"><br>
+      <br>
+      <img src="images/personalach.png" alt="" id="personalach" footer><br>
+      <br>
+      <p class="text"> Completely rebuilt my car - stripped down to shell then refitted using specialist components to create a unique, personalised </p>
+      <p class="text"> Taught myself how to diagnose automotive faults using specialist software and hardware </p>
+      <p class="text"> Repairing and maintaining PC'S and electronics </p>
+      <p class="text"> Researched and implemented NAS (Network Attached Storage) backup for companies remote PC'S </p>
+      <p class="text"> Maintaining & repairing home networks hardware and configuration </p>
+    <p class="text"> DIY & Electrical  upgrades including Smart device setup's </p></th>
+  </tr>
+  <tr>
+    <th scope="col"><br>
+      <br>
+      <img src="images/interests.png" alt="" id="interests" footer>
+      <p class="text"> Electronics & Smart Devices </p>
+      <p class="text"> Maintaining multi-platform operating systems </p>
+      <p class="text"> Gym fitness training </p>
+      <p class="text"> Petrol Head </p>
+      <p class="text"> PC / Console Gamer </p>
+      <p class="text"> Astrophotography & Space </p>    </th>
+  </tr>
+  <tr>
+    <th scope="col">&nbsp;</th>
+  </tr>
+  <tr>
+    <th scope="col"><div class="fade-in-text">
 <br>
 <br>
-I'm now a Rolling Stock Engineer working for Siemens Mobility Ltd, maintaining the Class 700 Desiro City Thameslink Fleet trains for GTR Railway.
-
-</p>
-<br>
-&nbsp;
-&nbsp;
-<img src="images/personalach.png" id="section-1">
-<p class="text">
-Completely rebuilt my car - stripped down to shell then refitted using specialist components to create a unique, personalised 
-
-</p>
-<p class="text">
-Taught myself how to diagnose automotive faults using specialist software and hardware
-</p>
-<p class="text">
-Repairing and maintaining PC'S and electronics
-</p>
-<p class="text">
-Researched and implemented NAS (Network Attached Storage) backup for companies remote PC'S
-</p>
-<p class="text">
-Maintaining & repairing home networks hardware and configuration
-</p>
-<p class="text">
-DIY & Electrical  upgrades including Smart device setup's
-</p>
 <br>
 <br>
-&nbsp;
-&nbsp;
-<img src="images/interests.png" id="section-2">
-<p class="text">
-Gym fitness training 
-</p>
-<p class="text">
-Electronics 
-</p>
-<p class="text">
-Maintaining multi-platform operating systems
-</p>
-<p class="text">
-Petrol Head
-</p>
-<p class="text">
-PC / Console Gamer
-</p>
-<p class="text">
-Astrophotography & Space
-</p>
-<p class="text">
-Movie Nights
-</p>
-<br>
-<br>
-<div class="fade-in-text">
-&nbsp;
-&nbsp;
-<img src="images/gallery.png">
+<img src="images/gallery.png" footer id="gallery">
 </div>
 <br>
 
@@ -261,19 +278,19 @@ window.onclick = function(event) {
   <div id="gallery">
     <figure class="pic1">
     <img src="images/examples/networkconfig.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">Network Configuration</p></figcaption>
+      <figcaption><font color="black">Network Configuration</font></p></figcaption>
     </figure>
 	<br>
 	<br>
     <figure class="pic2">
       <img src="images/examples/wiring1.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">Wiring Remedials</p></figcaption>
+      <figcaption><font color="black">Wiring Remedials</font></p></figcaption>
     </figure>
 	<br>
 	<br>
     <figure class="pic3">
       <img src="images/examples/cctv1.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">CCTV Install</p></figcaption>
+       <figcaption><font color="black">CCTV Install</font></p></figcaption>
     </figure>
 	<br>
 	<br>
@@ -282,12 +299,12 @@ window.onclick = function(event) {
 	  <br>
 	  <br>
 	  <img src="images/examples/battery_cable.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">Wiring / Terminations</p></figcaption>
+       <figcaption><font color="black">Wiring / Terminations</font></p></figcaption>
     </figure>
 	<figure class="pic6">
       <img src="images/examples/P1000%20LCD%20Moon.jpg" />
 	  <img src="images/examples/OrionNebula.png" />
-      <figcaption><p class="text" style="font-size:14px;">Astrophotography</p></figcaption>
+      <figcaption><font color="black">Astrophotography</font></p></figcaption>
  </figure>
 	<br>
 	<br>
@@ -304,7 +321,7 @@ window.onclick = function(event) {
     <figure class="pic5">
       <img src="images/examples/engineremoval.png" />
 	  <img src="images/examples/engineremoval_2.JPG" />
-      <figcaption><p class="text" style="font-size:14px;">Engine Overhaul</p></figcaption>
+       <figcaption><font color="black">Engine Overhaul</font></p></figcaption>
     </figure>
 
  
@@ -313,13 +330,13 @@ window.onclick = function(event) {
 	  <br>
 	  <br>
 	  <img src="images/examples/drainage.png" />
-      <figcaption><p class="text" style="font-size:14px;">Installing Soakaway - Garden Drainage</p></figcaption>
+       <figcaption><font color="black">Install Soakaway / Garden Drainage</font></p></figcaption>
  </figure>
  <figure class="pic4">
       <img src="images/examples/cabin.jpg" />
 	  <br>
 	  <img src="images/examples/cabin_2.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">Built Log Cabin</p></figcaption>
+       <figcaption><font color="black">Built Log Cabin</font></p></figcaption>
     </figure>
 	<br>
 	<br>
@@ -328,10 +345,23 @@ window.onclick = function(event) {
       <img src="images/examples/sockettap1.jpg" />
 	  <img src="images/examples/sockettap4.jpg" width="200" height="50" />
 	  <img src="images/examples/sockettap3.jpg" />
-      <figcaption><p class="text" style="font-size:14px;">Electrical Socket & Tap - Pressure Washing Vehicles</p></figcaption>
+      <figcaption><font color="black">Electrical Socket & Tap - Pressure Washing Vehicles</font></p></figcaption>
  </figure>
  
   </div>
+</center></th>
+  </tr>
+</table>
+<br>
+<br>
+<br>
+
+
+
+<br>
+<br>
+<br>
+<br>
 
 
 </body>
