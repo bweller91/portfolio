@@ -1,9 +1,9 @@
 .fade-in-text {
-  animation: fadeIn ease 10s;
-  -webkit-animation: fadeIn ease 10s;
-  -moz-animation: fadeIn ease 10s;
-  -o-animation: fadeIn ease 10s;
-  -ms-animation: fadeIn ease 10s;
+  animation: fadeIn ease 0s;
+  -webkit-animation: fadeIn ease 0s;
+  -moz-animation: fadeIn ease 0s;
+  -o-animation: fadeIn ease 0s;
+  -ms-animation: fadeIn ease 0s;
 }
 
 
