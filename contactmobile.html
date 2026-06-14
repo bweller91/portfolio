@@ -1,14 +1,8 @@
 <html>
 <head>
 
-<div>
-<p style="text-align: left;">Below I have given a demo that will help you to know how the&nbsp;<strong>automatic popup window</strong> works. Here I have taken the help of <span style="color: #2b00fe;"><a href="https://foolishdeveloper.com/search/label/html" target="_blank" rel="noopener">HTML CSS</a></span> and a small amount of JavaScript. This design can be found in the <span style="color: #2b00fe;">automatic popup field</span> and can be hidden again with the Cancel button.</p>
-<div>&nbsp;</div>
-<p class="codepen" style="height: 416px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-height="416" data-theme-id="light" data-default-tab="result" data-slug-hash="KKvmBmW" data-preview="true" data-user="codemediaweb">See the Pen <a href="https://codepen.io/codemediaweb/pen/KKvmBmW"><br>Untitled</a> by Code Media (<a href="https://codepen.io/codemediaweb">@codemediaweb</a>)<br>on <a href="https://codepen.io">CodePen</a>.</p>
-<p><script async="" src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script></p>
-<p style="text-align: left;">Hopefully, the demo above has helped you to know how it works. First I designed the webpage and then I made a box. <u>Display: none</u> is used for this box so the box cannot be seen. Here are some tests, added headings, and a cancel button. After clicking this button, the box will be hidden again.</p>
-</div>
-
+<link rel="stylesheet" href="swc.css">
+	
 <script>
 window.onload = function () {
 document.getElementById("#myBtn").click(); };
@@ -172,6 +166,24 @@ p.text {
 
 </head>
 <body>
+
+<div class="maintext">
+<h2> Main text goes here...</h2>
+</div>
+<div id="boxes">
+<div style="top: 50%; left: 50%; display: none;" id="dialog" class="window"> 
+<div id="san">
+<a href="#" class="close agree"><img src="close-icon.png" width="25" style="float:right; margin-right: -25px; margin-top: -20px;"></a>
+<img src="san-web-corner.png" width="450">
+</div>
+</div>
+<div style="width: 2478px; font-size: 32pt; color:white; height: 1202px; display: none; opacity: 0.4;" id="mask"></div>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.js"></script> 
+<script src="swc.js"></script>
+
+
+	
 <div class="qr"><p hidden>
 <img src="images/examples/QR.png" height="100" width="100">
 </div></p>
