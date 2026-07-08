@@ -1,327 +1,389 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BW Tech | Portfolio</title>
+    <link rel="stylesheet" href="css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --card-bg: rgba(18, 24, 36, 0.85); 
+            --neon-blue: #00d2ff;
+            --neon-orange: #ff5722;
+            --text-color: #ffffff;
+            --details-bg: rgba(26, 34, 51, 0.95);
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-<script>
-window.onload = function () {
-document.getElementById("#myBtn").click(); };
-</script>
+        body {
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            background-image: url("bg.png");
+            background-color: #0d1117;
+            position: relative;
+            overflow-x: hidden;
+        }
 
+        /* Clean, Sharp Relatable Background Layer */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Default background image (your original grid file) */
+            background-image: url('Gemini_Generated_Image_ibkw8tibkw8tibkw.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            /* Dimmed brightness for readability, NO blur */
+            filter: brightness(0.25);
+            z-index: -1; 
+            transition: background-image 0.5s ease-in-out;
+        }
 
-<meta name="viewport" content="width=600", initial-scale=1.0">
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
 
-<style>
-body {font-family: Arial, Helvetica, sans-serif;}
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
 
-/* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  padding-top: 100px; /* Location of the box */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+        header p {
+            color: #d1d5db;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
 
-/* Modal Content */
-.modal-content {
-  background-color: #fefefe;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-}
+        /* Services Grid Layout */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 60px;
+            position: relative;
+        }
 
-/* The Close Button */
-.close {
-  color: #aaaaaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+        /* Card Styling with Dual Glow Border Effect */
+        .service-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            
+            border: 2px solid transparent;
+            background-image: linear-gradient(var(--card-bg), var(--card-bg)), 
+                              linear-gradient(135deg, var(--neon-blue) 40%, var(--neon-orange) 60%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            color: var(--text-color);
+        }
 
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-</style>
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5), 0 0 20px rgba(255, 87, 34, 0.5);
+            background-color: rgba(18, 24, 36, 0.95);
+        }
+        
+        .service-card.active-card {
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.6), 0 0 25px rgba(255, 87, 34, 0.6);
+            transform: translateY(-3px);
+            background-color: rgba(18, 24, 36, 1);
+        }
 
+        /* Icon Styling */
+        .icon-container {
+            font-size: 3rem;
+            color: var(--neon-orange);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+        }
 
+        .service-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
 
+        .service-card p {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
 
-<style type ="text/css" >
-   .footer{ 
-       position: fixed;     
-       text-align: right;    
-       bottom: 0px; 
-       width: 100%;
-   }  
-</style>
+        /* Interactive Description Box */
+        .description-box {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--details-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 2px solid transparent;
+            background-image: linear-gradient(var(--details-bg), var(--details-bg)), 
+                              linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-orange) 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            position: relative;
+        }
 
-<style type ="text/css" >
-   .qr{ 
-       position: fixed;     
-       text-align: right;    
-       bottom: 80px; 
-       width: 100%;
-   }  
-</style>
+        .desc-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
 
-<link rel="stylesheet" href="#fade.css">
-<link rel="stylesheet" href="#fadetext.css">
-<title>Ben Weller | Portfolio</title>
-<style>
-body  {
-  background-image: url("images/BG.png");
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: left;
-  background-size: cover;
-  background-position: center, center;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-}
-</style>
+        .desc-content.active {
+            display: block;
+        }
 
+        .desc-content h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            color: var(--neon-blue);
+        }
 
-<style type="text/css">
-@font-face {
-    font-family: "text";
-    src: url(ITCKRIST.TTF) format("truetype");
-	text-align: center;
-}
+        .desc-content h2 i {
+            margin-right: 15px;
+            color: var(--neon-orange);
+        }
 
-p {
-  font-size: 20px;
-  color: white
-}
+        .desc-content p {
+            color: #d1d5db;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
 
-p.text { 
-    font-family: "text", Verdana, Tahoma;
-}
-</style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-<style type="gallerythumb/css">
-@-face {
-    font-family: "text";
-    src: url(ITCKRIST.TTF) format("truetype");
-	text-align: center;
-}
-
-p {
-  font-size: 30px;
-  color: yellow
-}
-
-p.text { 
-    font-family: "text", Verdana, Tahoma;
-}
-</style>
-
-
-
-
-
-
-
-
-
-
-
+        @media (min-width: 900px) {
+            .services-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="qr"><p hidden>
-<img src="images/examples/QR.png" height="100" width="100">
-</div></p>
 
-<div class="footer"><a href="https://www.facebook.com/ben.weller.91" target="_blank" alt="Ben's Facebook"><img src="images/fbicon.webp" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="https://www.instagram.com/bweller91" target="_blank" alt="Ben's Facebook"><img src="images/instaicon.png" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mailto:wellerben91@gmail.com?subject=Website Message" target="_blank" alt="Email Me"><img src="images/emailicon.png" width="50" height="50"></a></div>
-</div>
-<br>
-<br>
+    <div id="bgOverlay" class="bg-overlay"></div>
 
+    <header>
+        <img src="images\title.png" alt="" width="480" height"139">
+        <p>Advanced Technical & Automotive Solutions</p>
+    </header>
 
-<div class="fade-in-text">
-<center>
-<br>
-<br>
-<table width="100%" border="0" align="center">
-  <tr>
-     <th scope="col"><img src="images\title.png" alt="" width="480" height"139">
-      <table width="549" height="27" border="0
- " align="center">
-      <tr>
-        <th scope="col"><a href="#aboutmyself"><img src="images/aboutmyself.png" alt="" width="210" height="40"></a></th>
-        <th scope="col"><a href="#personalach"><img src="images/personalach.png" alt="" width="210" height="40"></a></th>
-        <th scope="col"><a href="#interests"><img src="images/interests.png" alt="" width="210" height="40"></a></th>
-        <th scope="col"><a href="#gallery"><img src="images/gallery.png" name="focus" alt="" width="210" height="40"></a></th>
-		<th scope="col"><a href="contactme.html" target="_blank"><img src="images/contactme.png" alt="" width="230" height="40"></a></th>
-      </tr>
-    </table></th>
-  </tr>
-  <tr>
-    <th scope="col"><p class="text">&nbsp;</p>
-      <p class="text">&nbsp;</p>
-      <p class="text">&nbsp;</p>
-      <p class="text"><img src="images/aboutmyself.png" alt="" id="aboutmyself" footer></p>
-      <p class="text">I'm technically minded and have always been around technology and electronics throught my childhood, from configuring specific software on various devices to wiring electrical looms for motor vehicles. <br>
-        <br>
-        I have worked as an electrical engineer & IT Systems Administrator for a small contract electronics manufacturing company for 10 years <br>
-        <br>
-        I'm now a Rolling Stock Engineer working for Siemens Mobility Ltd, maintaining the Class 700 Desiro City Thameslink Fleet trains for GTR Railway. </p>    </th>
-  </tr>
-  <tr>
-    <th scope="col">&nbsp;</th>
-  </tr>
-  <tr>
-    <th scope="col">&nbsp;</th>
-  </tr>
-  <tr>
-    <th scope="col"><br>
-      <br>
-      <img src="images/personalach.png" alt="" id="personalach" footer><br>
-      <br>
-      <p class="text"> Completely rebuilt my car - stripped down to shell then refitted using specialist components to create a unique, personalised </p>
-      <p class="text"> Taught myself how to diagnose automotive faults using specialist software and hardware </p>
-      <p class="text"> Repairing and maintaining PC'S and electronics </p>
-      <p class="text"> Researched and implemented NAS (Network Attached Storage) backup for companies remote PC'S </p>
-      <p class="text"> Maintaining & repairing home networks hardware and configuration </p>
-    <p class="text"> DIY & Electrical  upgrades including Smart device setup's </p></th>
-  </tr>
-  <tr>
-    <th scope="col"><br>
-      <br>
-      <img src="images/interests.png" alt="" id="interests" footer>
-      <p class="text"> Electronics & Smart Devices </p>
-      <p class="text"> Maintaining multi-platform operating systems </p>
-      <p class="text"> Gym fitness training </p>
-      <p class="text"> Petrol Head </p>
-      <p class="text"> PC / Console Gamer </p>
-      <p class="text"> Astrophotography & Space </p>    </th>
-  </tr>
-  <tr>
-    <th scope="col">&nbsp;</th>
-  </tr>
-  <tr>
-    <th scope="col"><div class="fade-in-text">
-<br>
-<br>
-<br>
-<br>
-<img src="images/gallery.png" footer id="gallery">
-<br>
-<br>
-<div align="center"><p class="text">I have put together a variety of photo's showing the projects and tasks which I've carried out for myself and others below:</div>
-<link href='gallery.css' rel='stylesheet' type='text/css'>
-<div id="background">
+    <div class="services-grid">
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'soldering', 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <h3>Soldering<br>Repairs</h3>
+        </a>
 
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'wiring', 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-bezier-curve"></i></div>
+            <h3>Wiring<br>Repairs</h3>
+        </a>
 
-<table width="80%" style="font-family: "Arial, Helvetica, sans-serif;" border="0" cellpadding="40" align="center"/>
-<tbody>
-<tr>
-<td><figure class="pic1"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/networkconfig.jpg" /><figcaption><font color="black">Network Configuration<br>Switching | NAS</font></p></figcaption>
-</figure></div></td>
-<td><figure class="pic2"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/vpn-adblock.jpg" /><figcaption><font color="black">VPN Server | Network Ad-Blocking<br>DNS Server</font></p></figcaption>
-</figure></div></div></td>
-<td><figure class="pic3"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/cctv1.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/smartlockdoorbell.jpg" /><figcaption><font color="black">CCTV | Wired Nest Doorbell<br>Yale RFID WiFi Smartlock</font></p></figcaption>
-</figure></div></div></td>
-<td><figure class="pic4"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/wiring1.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/wiring2.jpg" width="200" height="100" /><figcaption><font color="black">Wiring Remedials<br>Weatherproof Gland & Wiska Box  CPC Continuity Earthing Clamp </font></p></figcaption>
-</figure></div></div></td>
-</tr>
-<tr>
-<td><figure class="pic5"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/quinetic.gif" width="100" height="100" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/2gangswitch.jpg" width="140" height="100" /><figcaption><font color="black">Quinetic 2 Gang Wireless Switch<br> Spotlights & Extractor Fan</font></p></figcaption>
-</figure></td>
-<td><figure class="pic6"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/CCTVBalun.jpg" width="100" height="100"/><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/cctv2.JPG" width="160" height="130"/><figcaption><font color="black">CCTV Video Input Convert <br>Coaxial To CAT6 Cable</font></p></figcaption>
-</figure></td>
-<td><figure class="pic7"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/P1000%20LCD%20Moon.jpg" width="180" height="100" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/OrionNebula.png" width="160" height="100" /><figcaption><font color="black">Astrophotography<br>Nikkon P1000 | William Optics Redcat Prime Lens  f/4.9 focal ratio</font></p></figcaption>
-</figure> </td>
-<td><figure class="pic8"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/loom.jpg" width="300" height="100"/><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/battery_cable.jpg" /><figcaption><font color="black">Automotive Wiring Repairs<br> 12V Battery Cable Ring Crimp & Sleeve</font></p></figcaption>
-</figure></td>
-</tr>
-<tr>
-<td><figure class="pic9"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/digger.png" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/drainage.png" /><figcaption><font color="black">Install Soakaway / Garden Drainage
-</font></p></figcaption>
-</figure></td>
-<td><figure class="pic10"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/cabin.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/cabin_2.jpg" /><figcaption><font color="black">Built Log Cabin<br>Foundations & Concrete Base</font></p></figcaption>
-</figure></td>
-<td><figure class="pic11"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/engineremoval.png" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/engineremoval_2.JPG" /><figcaption><font color="black">Vehicle Engine Replacement<br> Removal & Install </font></p></figcaption>
-</figure></td>
-<td><figure class="pic12"><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/sockettap3.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/sockettap1.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/sockettap1.jpg" /><img src="https://raw.githubusercontent.com/bweller91/portfolio/refs/heads/main/images/examples/sockettap4.jpg" /><figcaption><font color="black">Electrical Socket & Tap - Pressure Washing Vehicles</font></p></figcaption>
-</figure></td>
-</tr>
-</tbody>
-</table>
-</center>
-</th>
-</tr>
-</table>
-</div>
-<br>
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'coding', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-laptop-code"></i></div>
+            <h3>Vehicle<br>Coding</h3>
+        </a>
 
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'tcu', 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-gear"></i></div>
+            <h3>Gearbox TCU<br>Programming</h3>
+        </a>
 
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'wifi', 'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-wifi"></i></div>
+            <h3>WiFi & Internet<br>Issues</h3>
+        </a>
 
-<!-- Trigger/Open The Modal -->
-<p hidden><button id="myBtn">Button</button></p>
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'cctv', 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-video"></i></div>
+            <h3>CCTV<br>Installs</h3>
+        </a>
 
-<!-- The Modal -->
-<div id="myModal" class="modal">
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'servicing', 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-car"></i></div>
+            <h3>Vehicle<br>Servicing + Parts</h3>
+        </a>
 
-  <!-- Modal content -->
-  <div class="modal-content">
-    <span class="close">&times;</span>
-	<center> <img src="images/Ben%20Weller_Card.png" width="50%" height ="50%">
-	<br>
-	<br>
-	<a href="https://www.facebook.com/ben.weller.91" target="_blank" alt="Ben's Facebook"><img src="images/fbicon.webp" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://www.instagram.com/bweller91" target="_blank" alt="Ben's Facebook"><img src="images/instaicon.png" width="50" height="50"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="mailto:wellerben91@gmail.com?subject=Website Message" target="_blank" alt="Email Me"><img src="images/emailicon.png" width="50" height="50"></a>
-  </div>
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'diagnostics', 'https://images.unsplash.com/photo-1507136566006-cfc505b114fc?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-car-battery"></i></div>
+            <h3>Vehicle<br>Diagnostics</h3>
+        </a>
 
-</div>
-<center>
-<br style = "line-height:40;">
-<br>
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'ecu', 'https://images.unsplash.com/photo-1617791160505-6f006e121980?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-microchip"></i></div>
+            <h3>Vehicle ECU<br>Programming</h3>
+            <p>(Eco, Mixed, High Performance)</p>
+        </a>
 
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'computer', 'https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-desktop"></i></div>
+            <h3>Computer<br>Issues & Upgrades</h3>
+        </a>
 
-<script>
-// Get the modal
-var modal = document.getElementById("myModal");
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'smartdev', 'https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <h3>Smart Device<br>Setups</h3>
+        </a>
 
-// Get the button that opens the modal
-var btn = document.getElementById("myBtn");
+        <a href="#description-box" class="service-card" onclick="updateView(event, 'diy', 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=1200&q=80')">
+            <div class="icon-container"><i class="fa-solid fa-hammer"></i></div>
+            <h3>DIY<br>Tasks</h3>
+        </a>
+    </div>
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+    <div id="description-box" class="description-box">
+        
+        <div id="default-message" class="desc-content active">
+            <h2><i class="fa-solid fa-circle-info"></i> Service Overview</h2>
+            <p>Select any service card from the grid layout above to view details. Clicking an item will seamlessly change the background image to a high-definition image matching that specific task choice.</p>
+        </div>
 
-// When the user clicks the button, open the modal 
-btn.onclick = function() {
-  modal.style.display = "block";
-}
+        <div id="soldering" class="desc-content">
+            <h2><i class="fa-solid fa-screwdriver-wrench"></i> Soldering Repairs</h2>
+            <p>Our expert technicians provide high-precision soldering services for a wide range of electronic components. Whether it's repairing intricate circuit boards, fixing broken connections, or re-seating delicate components, we ensure reliable and durable repairs. Perfect for restoring functionality to vintage electronics, damaged devices, and custom automotive modules.</p>
+        </div>
 
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-}
+        <div id="wiring" class="desc-content">
+            <h2><i class="fa-solid fa-bezier-curve"></i> Wiring Repairs</h2>
+            <p>Specializing in complex wiring faults, we offer comprehensive repair solutions. From identifying and patching frayed wires to complete harness overhauls, we fix electrical issues in vehicles, homes, and industrial equipment. Our meticulous approach guarantees optimal signal integrity and power distribution, preventing future failures.</p>
+        </div>
 
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
-</script>
-</th>
-</tr>
+        <div id="coding" class="desc-content">
+            <h2><i class="fa-solid fa-laptop-code"></i> Vehicle Coding</h2>
+            <p>Unlock hidden features and customize your vehicle's electronic control modules. Our vehicle coding services allow for personalized settings like enabling/disabling warning chimes, activating hidden light configurations, and reconfiguring onboard systems. Enhance your driving experience and tailor your car to your exact preferences.</p>
+        </div>
+
+        <div id="tcu" class="desc-content">
+            <h2><i class="fa-solid fa-gear"></i> Gearbox TCU Programming</h2>
+            <p>Optimize your vehicle's transmission performance with our Transmission Control Unit (TCU) programming. Whether you're looking for smoother shifts, faster gear changes, or custom shift points, we calibrate the TCU to deliver a more responsive and engaging driving dynamic. Also useful for adapting newer transmissions to older chassis.</p>
+        </div>
+
+        <div id="wifi" class="desc-content">
+            <h2><i class="fa-solid fa-wifi"></i> WiFi & Internet Issues</h2>
+            <p>Say goodbye to connectivity problems. We diagnose and resolve a wide array of WiFi and internet challenges, including dead zones, slow speeds, dropped connections, and router configuration issues. We optimize your network setup for maximum coverage and reliability, ensuring seamless streaming, gaming, and working from home.</p>
+        </div>
+
+        <div id="cctv" class="desc-content">
+            <h2><i class="fa-solid fa-video"></i> CCTV Installs</h2>
+            <p>Enhance the security of your home or business with our professional CCTV installation services. We design and install custom surveillance systems using high-definition cameras, ensuring complete coverage of critical areas. Monitor your property remotely, record high-quality footage, and enjoy peace of mind knowing your premises are protected.</p>
+        </div>
+
+        <div id="servicing" class="desc-content">
+            <h2><i class="fa-solid fa-car"></i> Vehicle Servicing + Parts</h2>
+            <p>Keep your car running at its best with our comprehensive vehicle servicing. We perform routine maintenance, including oil changes, brake inspections, filter replacements, and fluid top-ups. We only use high-quality, genuine parts to ensure optimal performance and longevity for your vehicle. Thorough checks and preventative maintenance.</p>
+        </div>
+
+        <div id="diagnostics" class="desc-content">
+            <h2><i class="fa-solid fa-car-battery"></i> Vehicle Diagnostics</h2>
+            <p>Identify underlying vehicle issues quickly and accurately with our advanced diagnostic services. Utilizing state-of-the-art diagnostic tools, we scan your car's electronic systems to pinpoint fault codes and performance irregularities. Get a clear understanding of your vehicle's health and make informed decisions about repairs.</p>
+        </div>
+
+        <div id="ecu" class="desc-content">
+            <h2><i class="fa-solid fa-microchip"></i> Vehicle ECU Programming</h2>
+            <p>Transform your vehicle's performance with Engine Control Unit (ECU) remapping. Our ECU programming optimizes engine parameters like fuel ignition timing, boost pressure, and rev limits. Choose from different modes: **Eco** for improved fuel efficiency, **Mixed** for a balance of power and economy, or **High Performance** for maximum horsepower and torque gains.</p>
+        </div>
+
+        <div id="computer" class="desc-content">
+            <h2><i class="fa-solid fa-desktop"></i> Computer Issues & Upgrades</h2>
+            <p>Give your computer a new lease on life. We diagnose performance bottlenecks, repair hardware issues, and optimize operating systems. Whether you need a faster processor, more RAM, a larger SSD, or a dedicated graphics card, our experts provide seamless upgrades to boost speed, enhance productivity, and improve gaming performance.</p>
+        </div>
+
+        <div id="smartdev" class="desc-content">
+            <h2><i class="fa-solid fa-mobile-screen-button"></i> Smart Device Setups</h2>
+            <p>Integrating new technology into your home should be effortless. We offer expert smart device setup and configuration services, ensuring your smart speakers, thermostats, lighting, security cameras, and hubs are seamlessly connected and working together. We provide personalized training so you can get the most out of your smart home ecosystem.</p>
+        </div>
+
+        <div id="diy" class="desc-content">
+            <h2><i class="fa-solid fa-hammer"></i> DIY Tasks</h2>
+            <p>Need a helping hand with your latest DIY project? We offer expert guidance, tips, and professional assistance for various DIY tasks. Whether you're working on home renovations, automotive repairs, or creative projects, we provide the practical support and technical knowledge to help you achieve professional-looking results safely and efficiently.</p>
+        </div>
+
+    </div>
+
+    <script>
+        function updateView(event, serviceId, imageUrl) {
+            // 1. Swap background-image sharply (with an opacity transition)
+            const overlay = document.getElementById('bgOverlay');
+            overlay.style.backgroundImage = `url('${imageUrl}')`;
+
+            // 2. Manage Text Content Active State
+            const contents = document.querySelectorAll('.desc-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const targetContent = document.getElementById(serviceId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // 3. Update Visual Card Highlighting
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => card.classList.remove('active-card'));
+            event.currentTarget.classList.add('active-card');
+
+            // 4. Scroll To Content Box
+            setTimeout(() => {
+                document.getElementById('description-box').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 50);
+        }
+    </script>
 </body>
 </html>
-
-
