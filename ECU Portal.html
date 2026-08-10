@@ -1059,6 +1059,18 @@
     <div class="bg-glow-dark"></div>
     <canvas id="data-stream-canvas"></canvas>
 
+    <!-- Initial Access Lock Dialog Overlay -->
+    <div id="entry-lock-dialog-overlay" class="dialog-overlay" style="display: flex; z-index: 1000;">
+        <div class="dialog-box">
+            <div class="dialog-title" style="color: #00ff66;">🔑 SYSTEM AUTHENTICATION</div>
+            <div class="dialog-message">Please enter the gateway password to access the system.</div>
+            
+            <input type="password" id="entry-password-input" placeholder="Enter Password..." style="width: 100%; text-align: center; margin-top: 5px;" autofocus>
+            <div id="entry-error-msg" style="color: #ff8088; font-size: 11px; display: none;">Invalid Password. Access Denied.</div>
+            <button id="entry-unlock-btn" type="button">Enter Portal</button>
+        </div>
+    </div>
+
     <!-- Options Gear Icon Button -->
     <button id="options-gear-btn" type="button" aria-label="Open Options Settings" title="System Settings">
         ⚙️
@@ -1361,6 +1373,30 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+        // --- Initial Entry Lock Screen Handler ---
+        const entryLockOverlay = document.getElementById('entry-lock-dialog-overlay');
+        const entryPasswordInput = document.getElementById('entry-password-input');
+        const entryUnlockBtn = document.getElementById('entry-unlock-btn');
+        const entryErrorMsg = document.getElementById('entry-error-msg');
+
+        async function verifyEntryPassword() {
+            const inputHash = await hashPassword(entryPasswordInput.value.trim());
+            if (inputHash === requiredPasswordHash) {
+                entryLockOverlay.style.display = 'none';
+                entryErrorMsg.style.display = 'none';
+            } else {
+                entryErrorMsg.style.display = 'block';
+            }
+        }
+
+        entryUnlockBtn.addEventListener('click', verifyEntryPassword);
+        entryPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyEntryPassword();
+            }
+        });
+
         // --- Options Modal Controls ---
         const optionsGearBtn = document.getElementById('options-gear-btn');
         const optionsModal = document.getElementById('options-modal');
@@ -1603,7 +1639,7 @@
         openHexBtn.addEventListener('click', async () => {
             if (!loadedFile) return;
             hexDialogOverlay.style.display = 'flex';
-            hexDumpContent.innerText = "Reading binary bytes...";
+            hexDumpContent.innerText = "Reading binary stream...";
 
             const buffer = await loadedFile.slice(0, 256).arrayBuffer();
             const bytes = new Uint8Array(buffer);
@@ -2136,7 +2172,7 @@
         window.addEventListener('keydown', (event) => {
             if (!isProcessingSession) return;
 
-            if (document.activeElement === lockPasswordInput || document.activeElement === browserUrlInput || document.activeElement === dtcInput || document.activeElement === newPasswordInput) {
+            if (document.activeElement === lockPasswordInput || document.activeElement === entryPasswordInput || document.activeElement === browserUrlInput || document.activeElement === dtcInput || document.activeElement === newPasswordInput) {
                 if (event.key === 'Enter' && document.activeElement === lockPasswordInput) unlockApp();
                 return;
             }
