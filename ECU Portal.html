@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECU / TCU Portal Gateway</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: #080a0f;
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body.matrix-off {
+            background-image: radial-gradient(rgba(0, 0, 0, 0.75), rgba(8, 10, 15, 0.95)), 
+                              url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(rgba(0, 255, 100, 0.06) 1px, transparent 0),
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px, 40px 40px, 40px 40px;
+            z-index: 0;
+        }
+
+        .bg-glow-red {
+            position: absolute;
+            top: -10%;
+            right: 10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(227, 6, 19, 0.15) 0%, rgba(8, 10, 15, 0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            filter: blur(60px);
+            animation: pulseGlow 8s ease-in-out infinite alternate;
+        }
+
+        .bg-glow-dark {
+            position: absolute;
+            bottom: -10%;
+            left: 5%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(0, 255, 65, 0.1) 0%, rgba(8, 10, 15, 0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            filter: blur(80px);
+        }
+
+        #data-stream-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.75;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            z-index: 1;
+        }
+
+        #options-gear-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(18, 22, 31, 0.85);
+            color: #00ff66;
+            border: 1px solid rgba(0, 255, 102, 0.4);
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 99;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 102, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #options-gear-btn:hover {
+            background-color: rgba(0, 255, 102, 0.15);
+            border-color: #00ff66;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
+            transform: rotate(90deg);
+        }
+
+        .options-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 7, 10, 0.85);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .options-modal-box {
+            background: rgba(14, 18, 25, 0.95);
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            width: 380px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 255, 102, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            position: relative;
+        }
+
+        .options-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #00ff66;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(0, 255, 102, 0.15);
+            padding-bottom: 10px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .options-label {
+            font-size: 12px;
+            color: #cbd5e1;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1e2330;
+            border: 1px solid #333a4d;
+            transition: .3s;
+            border-radius: 22px;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle {
+            background-color: rgba(0, 255, 102, 0.2);
+            border-color: #00ff66;
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(22px);
+            background-color: #00ff66;
+            box-shadow: 0 0 8px #00ff66;
+        }
+
+        .range-slider {
+            width: 100%;
+            accent-color: #00ff66;
+            background: #0f1219;
+            cursor: pointer;
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .options-saved-msg {
+            font-size: 11px;
+            color: #00ff66;
+            text-align: center;
+            display: none;
+        }
+
+        .portal-main-wrapper, .process-main-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 95vw;
+            height: 92vh;
+            max-width: 1400px;
+            transition: all 0.3s ease;
+        }
+
+        .process-main-wrapper {
+            display: none;
+        }
+
+        .browser-side-panel {
+            display: flex;
+            flex-direction: column;
+            width: 0;
+            height: 100%;
+            max-height: 85vh;
+            opacity: 0;
+            overflow: hidden;
+            background: rgba(14, 18, 25, 0.92);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 102, 0.08);
+            backdrop-filter: blur(14px);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .browser-side-panel.open {
+            width: 580px;
+            flex-grow: 1;
+            opacity: 1;
+            padding: 18px;
+        }
+
+        .browser-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #00ff66;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .browser-close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            width: auto;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .browser-close-btn:hover {
+            color: #ff3344;
+            background: none;
+        }
+
+        .dtc-lookup-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            background: rgba(10, 13, 20, 0.8);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 255, 102, 0.15);
+        }
+
+        .dtc-lookup-box input {
+            flex: 1;
+            padding: 6px 10px;
+            background: #080a0f;
+            border: 1px solid #2a2e3d;
+            color: #00ff66;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .dtc-result-text {
+            font-size: 11px;
+            color: #cbd5e1;
+            padding: 6px 10px;
+            background: #080a0f;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            display: none;
+            border-left: 3px solid #00ff66;
+        }
+
+        .browser-iframe-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background: #080a0f;
+            border-radius: 8px;
+            border: 1px solid #2a2e3d;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .browser-iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex: 1;
+        }
+
+        .browser-toggle-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 320px;
+            margin-top: 2px;
+        }
+
+        .browser-toggle-bar input[type="url"] {
+            flex: 1;
+            padding: 8px 10px;
+            background-color: #0f1219;
+            border: 1px solid #2a2e3d;
+            color: #00ff66;
+            font-family: monospace;
+            font-size: 12px;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .browser-toggle-bar input[type="url"]:focus {
+            border-color: #00ff66;
+            box-shadow: 0 0 0 2px rgba(0, 255, 102, 0.25);
+        }
+
+        .browser-toggle-bar button {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        #fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: auto;
+            padding: 10px 16px;
+            background: rgba(18, 22, 31, 0.85);
+            color: #00ff66;
+            border: 1px solid rgba(0, 255, 102, 0.4);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            z-index: 99;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 102, 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #fullscreen-btn:hover {
+            background-color: rgba(0, 255, 102, 0.15);
+            border-color: #00ff66;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .server-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .server-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #00ff66;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(0, 255, 102, 0.08);
+            border: 1px solid rgba(0, 255, 102, 0.25);
+            padding: 3px 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-family: monospace;
+        }
+
+        .server-status.offline {
+            color: #ff3344;
+            background: rgba(255, 51, 68, 0.08);
+            border-color: rgba(255, 51, 68, 0.3);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff66;
+            animation: pulseDotGreen 1.8s infinite ease-in-out;
+        }
+
+        .status-dot.offline {
+            background-color: #ff3344;
+            box-shadow: 0 0 8px #ff3344;
+            animation: pulseDotRed 1.8s infinite ease-in-out;
+        }
+
+        .status-divider {
+            opacity: 0.4;
+            font-weight: 300;
+        }
+
+        .latency-text {
+            color: #00ff66;
+            font-weight: 600;
+        }
+
+        .server-status.offline .latency-text {
+            color: #ff3344;
+        }
+
+        .mute-btn {
+            background: rgba(15, 18, 25, 0.8);
+            border: 1px solid #2a2e3d;
+            color: #cbd5e1;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            width: auto;
+            text-transform: none;
+            box-shadow: none;
+        }
+        .mute-btn:hover {
+            background: #1e2330;
+            border-color: #00ff66;
+        }
+
+        @keyframes pulseDotGreen {
+            0%, 100% { opacity: 0.4; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        @keyframes pulseDotRed {
+            0%, 100% { opacity: 0.4; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        #input-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: rgba(14, 18, 25, 0.88);
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 102, 0.08);
+            backdrop-filter: blur(14px);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        #input-screen::-webkit-scrollbar, #process-screen::-webkit-scrollbar {
+            width: 5px;
+        }
+        #input-screen::-webkit-scrollbar-thumb, #process-screen::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 102, 0.3);
+            border-radius: 4px;
+        }
+
+        #input-screen h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        #input-screen h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background-color: #e30613;
+            border-radius: 2px;
+        }
+
+        #error-banner {
+            display: none;
+            width: 320px;
+            background-color: rgba(227, 6, 19, 0.15);
+            border: 1px solid #e30613;
+            color: #ff8088;
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        select.ecu-preset-select {
+            width: 320px;
+            padding: 8px 10px;
+            background-color: #0f1219;
+            border: 1px solid #2a2e3d;
+            color: #00ff66;
+            font-size: 12px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+        select.ecu-preset-select option {
+            background-color: #0f1219;
+            color: #f1f5f9;
+        }
+
+        .drop-zone {
+            width: 320px;
+            padding: 14px 10px;
+            border: 2px dashed rgba(0, 255, 102, 0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            background: rgba(15, 18, 25, 0.6);
+            transition: all 0.2s ease;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #00ff66;
+            background: rgba(0, 255, 102, 0.08);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+        }
+        .drop-zone-icon {
+            font-size: 20px;
+        }
+        .drop-zone-text {
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: center;
+        }
+        .drop-zone-text strong {
+            color: #00ff66;
+        }
+
+        #checksum-info-box {
+            display: none;
+            width: 320px;
+            background: rgba(0, 255, 102, 0.05);
+            border: 1px solid rgba(0, 255, 102, 0.25);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 10px;
+            font-family: monospace;
+            color: #00ff66;
+        }
+
+        .checksum-status {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .checksum-hash {
+            color: #94a3b8;
+            word-break: break-all;
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .btn-hex-view {
+            background: rgba(0, 255, 102, 0.15);
+            border: 1px solid rgba(0, 255, 102, 0.4);
+            color: #00ff66;
+            padding: 2px 6px;
+            font-size: 9px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+            text-transform: none;
+            box-shadow: none;
+        }
+        .btn-hex-view:hover {
+            background: #00ff66;
+            color: #000;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 320px;
+            padding: 8px 12px;
+            background-color: #0f1219;
+            border: 1px solid #2a2e3d;
+            color: #f8fafc;
+            font-size: 13px;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #00ff66;
+            box-shadow: 0 0 0 2px rgba(0, 255, 102, 0.25);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            width: 320px;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #e30613;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 15px rgba(227, 6, 19, 0.3);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: #ff1a27;
+        }
+
+        button:active {
+            transform: scale(0.99);
+        }
+
+        button.btn-secondary {
+            background-color: #1e2330;
+            color: #cbd5e1;
+            box-shadow: none;
+            border: 1px solid #333a4d;
+        }
+
+        button.btn-secondary:hover {
+            background-color: #2a3142;
+            color: #ffffff;
+            border-color: #475569;
+        }
+
+        #process-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 620px;
+            max-height: 85vh;
+            overflow-y: auto;
+            gap: 14px;
+            background: rgba(14, 18, 25, 0.92);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 102, 0.08);
+            backdrop-filter: blur(14px);
+        }
+
+        #status-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+            min-height: 22px;
+            letter-spacing: 0.3px;
+        }
+
+        .animation-box {
+            width: 100%;
+            height: 85px;
+            background-color: #0d1017;
+            border: 1px solid #232836;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .node-icon {
+            font-size: 24px;
+        }
+
+        .node-label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .packet {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            position: absolute;
+            top: 32px;
+            left: 90px;
+            box-shadow: 0 0 12px #00ff66;
+            animation: transmit 2s infinite linear;
+        }
+
+        @keyframes transmit {
+            0% { left: 90px; opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { left: calc(100% - 90px); opacity: 0.2; }
+        }
+
+        .terminal-box {
+            width: 100%;
+            height: 120px;
+            background-color: #05070a;
+            border: 1px solid #1e2330;
+            border-radius: 6px;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            color: #e30613;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .terminal-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.4;
+            color: #00ff66;
+            text-shadow: 0 0 4px rgba(0, 255, 102, 0.4);
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #0d1017;
+            border: 1px solid #232836;
+            border-radius: 6px;
+            height: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #progress-bar, #lock-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #b9050f 0%, #00ff66 100%);
+            transition: width 0.2s linear;
+        }
+
+        #time-remaining {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .lock-progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin: 4px 0;
+        }
+
+        .lock-progress-percent {
+            font-size: 12px;
+            font-family: monospace;
+            color: #00ff66;
+            font-weight: bold;
+            min-width: 42px;
+            text-align: right;
+        }
+
+        #summary-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            gap: 16px;
+            background: rgba(14, 18, 25, 0.92);
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 102, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 102, 0.15);
+            backdrop-filter: blur(14px);
+        }
+
+        #summary-screen h2 {
+            font-size: 18px;
+            color: #00ff66;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-card {
+            width: 100%;
+            background-color: #090b0f;
+            border: 1px solid #1e2330;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #141923;
+            padding-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: #f1f5f9;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .summary-value.highlight {
+            color: #00ff66;
+        }
+
+        .summary-button-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 7, 10, 0.88);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .dialog-box {
+            background-color: #12161f;
+            border: 1px solid #2a2e3d;
+            border-radius: 10px;
+            padding: 24px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dialog-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .dialog-filename {
+            font-size: 11px;
+            color: #00ff66;
+            background-color: #090b0f;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px dashed #00ff66;
+            word-break: break-all;
+            font-family: monospace;
+        }
+
+        .dialog-params {
+            font-size: 11px;
+            color: #cbd5e1;
+            background-color: #090b0f;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #1e2330;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dialog-params-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .dialog-params-label {
+            color: #64748b;
+        }
+
+        .dialog-message {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .dialog-box button {
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .hex-dump-content {
+            font-family: monospace;
+            font-size: 10px;
+            color: #00ff66;
+            background: #05070a;
+            border: 1px solid #1e2330;
+            padding: 10px;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body, html {
+                background-color: #080a0f !important;
+                color: #f1f5f9 !important;
+                overflow: visible !important;
+            }
+            #fullscreen-btn, #options-gear-btn, #return-btn, #print-btn, #export-btn, .dialog-overlay, .options-modal-overlay, .browser-side-panel {
+                display: none !important;
+            }
+            .bg-grid, .bg-glow-red, .bg-glow-dark, #data-stream-canvas {
+                display: block !important;
+            }
+            #summary-screen {
+                display: flex !important;
+                background: rgba(14, 18, 25, 0.95) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Layers -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow-red"></div>
+    <div class="bg-glow-dark"></div>
+    <canvas id="data-stream-canvas"></canvas>
+
+    <!-- Options Gear Icon Button -->
+    <button id="options-gear-btn" type="button" aria-label="Open Options Settings" title="System Settings">
+        ⚙️
+    </button>
+
+    <!-- Floating Fullscreen Button -->
+    <button id="fullscreen-btn" type="button" aria-label="Toggle Fullscreen">
+        <span>⛶</span>
+    </button>
+
+    <!-- Options Settings Panel Modal -->
+    <div id="options-modal" class="options-modal-overlay">
+        <div class="options-modal-box">
+            <div class="options-header">
+                <span>⚙️ Control Options</span>
+                <button type="button" class="browser-close-btn" id="options-close-btn" title="Close Panel">✖</button>
+            </div>
+
+            <div class="options-group">
+                <div class="options-label">
+                    <span>Background Matrix Stream</span>
+                    <label class="switch">
+                        <input type="checkbox" id="matrix-toggle" checked>
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="options-group">
+                <div class="options-label">
+                    <span>Estimated Time Remaining:</span>
+                    <span id="slider-time-val" style="color: #00ff66; font-family: monospace;">25 mins</span>
+                </div>
+                <input type="range" id="time-slider" class="range-slider" min="10" max="60" value="25">
+            </div>
+
+            <div class="options-group">
+                <div class="options-label">
+                    <span>Change System Password</span>
+                </div>
+                <input type="password" id="new-password-input" placeholder="Enter new password..." style="width: 100%;">
+                <button type="button" id="save-password-btn" class="btn-secondary" style="margin-top: 4px; padding: 6px;">Update Password</button>
+            </div>
+
+            <div id="options-saved-msg" class="options-saved-msg">✓ Password updated successfully!</div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- MAIN PORTAL GATEWAY SCREEN -->
+        <div class="portal-main-wrapper" id="portal-wrapper">
+            
+            <div id="input-screen">
+                <div class="server-status-bar">
+                    <div class="server-status" id="server-status-box">
+                        <span class="status-dot" id="server-status-dot"></span>
+                        <span id="server-status-text">Checking...</span>
+                        <span class="status-divider">|</span>
+                        <span id="server-latency-text" class="latency-text">-- ms</span>
+                        <span class="status-divider">|</span>
+                        <span id="server-time-text">--:--:--</span>
+                    </div>
+                    <button type="button" id="mute-toggle-btn" class="mute-btn">🔊 Sound On</button>
+                </div>
+
+                <h2>ECU / TCU Portal Gateway</h2>
+                
+                <div id="error-banner">Please select a file to continue</div>
+
+                <select id="ecu-preset-select" class="ecu-preset-select" aria-label="ECU Quick Presets">
+                    <option value="">-- Quick Load ECU Preset --</option>
+                    <option value="bosch_med17" data-make="Audi" data-model="S3 8V" data-engine="2.0 TFSI" data-type="Bosch MED17.1.1">Bosch MED17.1.1 (VAG 2.0T)</option>
+                    <option value="simos18" data-make="Volkswagen" data-model="Golf R MK7" data-engine="2.0 TSI" data-type="Continental Simos 18.1">Continental Simos 18.1 (VAG 2.0T)</option>
+                    <option value="edc16c35" data-make="BMW" data-model="330d E90" data-engine="3.0d M57" data-type="Bosch EDC16C35">Bosch EDC16C35 (BMW 3.0d)</option>
+                    <option value="dq250" data-make="Volkswagen" data-model="Golf GTI MK7" data-engine="2.0 TSI (TCU)" data-type="Continental DQ250">Continental DQ250 (DSG TCU)</option>
+                </select>
+
+                <div class="drop-zone" id="drop-zone">
+                    <span class="drop-zone-icon">📁</span>
+                    <span class="drop-zone-text" id="drop-zone-label">Drag & Drop ECU Dump File or <strong>Browse</strong></span>
+                    <input type="file" id="ecu-file-input" accept=".bin,.hex,.ori,.ecu,.txt" style="display: none;">
+                </div>
+
+                <div id="checksum-info-box">
+                    <div class="checksum-status">
+                        <span>✓ CHECKSUM VERIFIED</span>
+                        <button type="button" id="open-hex-btn" class="btn-hex-view">👁️ Hex Preview</button>
+                    </div>
+                    <div class="checksum-hash" id="checksum-hash-val">MD5: --</div>
+                </div>
+
+                <input type="text" id="user-ecu-type" placeholder="Enter ECU Type..." aria-label="ECU Type">
+                <input type="text" id="user-input" placeholder="Enter Make..." aria-label="Vehicle Make">
+                <input type="text" id="user-input-2" placeholder="Enter Model..." aria-label="Vehicle Model">
+                <input type="text" id="user-input-3" placeholder="Enter Engine Size..." aria-label="Engine Size">
+                <input type="password" id="user-password" placeholder="Enter Password..." aria-label="Gateway Password">
+
+                <div class="browser-toggle-bar">
+                    <input type="url" id="browser-url-input" placeholder="https://example.com" aria-label="Browser URL">
+                    <button type="button" id="browser-go-btn" class="btn-secondary">🌐 Open Web</button>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" id="reset-btn" class="btn-secondary">Clear</button>
+                    <button type="button" id="submit-btn">Search</button>
+                </div>
+            </div>
+
+            <div class="browser-side-panel" id="browser-side-panel">
+                <div class="browser-header">
+                    <span>🌐 Embedded Web Viewer</span>
+                    <button type="button" class="browser-close-btn" id="browser-close-btn" title="Close Panel">✖</button>
+                </div>
+
+                <div class="dtc-lookup-box">
+                    <input type="text" id="dtc-input" placeholder="Enter OBD-II Code (e.g. P0300)...">
+                    <button type="button" id="dtc-btn" class="btn-secondary" style="width: auto; padding: 6px 10px;">Decode</button>
+                </div>
+                <div id="dtc-result" class="dtc-result-text"></div>
+
+                <div class="browser-iframe-container">
+                    <iframe id="browser-frame" src="about:blank"></iframe>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PROCESSING SCREEN CONTAINER -->
+        <div class="process-main-wrapper" id="process-wrapper">
+            <div id="process-screen">
+                <div id="status-text">Searching database...</div>
+                
+                <div class="animation-box">
+                    <div class="node">
+                        <div class="node-icon">🚗</div>
+                        <div class="node-label">Vehicle</div>
+                    </div>
+                    <div class="packet"></div>
+                    <div class="node">
+                        <div class="node-icon">🗄️</div>
+                        <div class="node-label">Database</div>
+                    </div>
+                </div>
+
+                <div class="terminal-box" id="terminal-output"></div>
+
+                <div class="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+                
+                <div id="time-remaining">Estimated time remaining: --:--</div>
+
+                <button type="button" id="cancel-btn" class="btn-secondary" style="width: 200px; margin-top: 5px;">Cancel Operation</button>
+            </div>
+        </div>
+
+        <!-- SUMMARY PAGE -->
+        <div id="summary-screen">
+            <h2>✓ Session Detailed Summary</h2>
+            
+            <div class="summary-card">
+                <div class="summary-row">
+                    <span class="summary-label">Uploaded File:</span>
+                    <span id="sum-filename" class="summary-value highlight">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Checksum Hash:</span>
+                    <span id="sum-checksum" class="summary-value highlight">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">ECU Type:</span>
+                    <span id="sum-ecu-type" class="summary-value">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Vehicle Make:</span>
+                    <span id="sum-make" class="summary-value">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Vehicle Model:</span>
+                    <span id="sum-model" class="summary-value">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Engine Size:</span>
+                    <span id="sum-engine" class="summary-value">-</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Time Taken:</span>
+                    <span id="sum-timer" class="summary-value highlight">--:--</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Process Status:</span>
+                    <span class="summary-value highlight">COMPLETED / SUCCESS</span>
+                </div>
+            </div>
+
+            <div class="summary-button-group">
+                <button type="button" id="return-btn">Return to Portal</button>
+                <button type="button" id="print-btn" class="btn-secondary">🖨️ Print Details</button>
+                <button type="button" id="export-btn" class="btn-secondary">💾 Export JSON Log</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Found Dialog Overlay -->
+    <div id="dialog-overlay" class="dialog-overlay">
+        <div class="dialog-box">
+            <div class="dialog-title">Database Match Found</div>
+            <div id="dialog-filename" class="dialog-filename">File: None</div>
+            
+            <div id="dialog-params" class="dialog-params">
+                <div class="dialog-params-item"><span class="dialog-params-label">ECU Type:</span> <span id="display-ecu-type">-</span></div>
+                <div class="dialog-params-item"><span class="dialog-params-label">Make:</span> <span id="display-make">-</span></div>
+                <div class="dialog-params-item"><span class="dialog-params-label">Model:</span> <span id="display-model">-</span></div>
+                <div class="dialog-params-item"><span class="dialog-params-label">Engine Size:</span> <span id="display-engine">-</span></div>
+            </div>
+
+            <div class="dialog-message">Found match in database, click continue to confirm.</div>
+            <button id="dialog-continue-btn" type="button">Continue</button>
+        </div>
+    </div>
+
+    <!-- Hex Dump Viewer Modal Overlay -->
+    <div id="hex-dialog-overlay" class="dialog-overlay">
+        <div class="dialog-box" style="width: 500px;">
+            <div class="dialog-title" style="color: #00ff66;">Hex Dump Raw Stream (First 256 Bytes)</div>
+            <div id="hex-dump-content" class="hex-dump-content">Loading binary stream...</div>
+            <button id="hex-close-btn" type="button" class="btn-secondary">Close Hex Viewer</button>
+        </div>
+    </div>
+
+    <!-- Cancellation Dialog Overlay -->
+    <div id="cancel-dialog-overlay" class="dialog-overlay">
+        <div class="dialog-box">
+            <div class="dialog-title" style="color: #ff8088;">Operation Cancelled</div>
+            <div class="dialog-message">The current process has been aborted. Click to continue.</div>
+            <button id="cancel-confirm-btn" type="button">OK</button>
+        </div>
+    </div>
+
+    <!-- Operation Completed Dialog Overlay -->
+    <div id="success-dialog-overlay" class="dialog-overlay">
+        <div class="dialog-box">
+            <div class="dialog-title" style="color: #00ff66;">Operation Completed</div>
+            <div class="dialog-message">The current process has been successful. Click to continue.</div>
+            <button id="success-confirm-btn" type="button">Click to Continue</button>
+        </div>
+    </div>
+
+    <!-- Security Lock Dialog Overlay -->
+    <div id="lock-dialog-overlay" class="dialog-overlay" style="z-index: 999;">
+        <div class="dialog-box">
+            <div class="dialog-title" style="color: #e30613;">🔒 SECURITY LOCK ACTIVE</div>
+            <div class="dialog-message">Keyboard activity detected. Please enter password to unlock application.</div>
+            
+            <div class="lock-progress-wrapper">
+                <div class="progress-container" style="margin: 0; flex: 1;">
+                    <div id="lock-progress-bar"></div>
+                </div>
+                <span id="lock-progress-percent" class="lock-progress-percent">0%</span>
+            </div>
+
+            <input type="password" id="lock-password-input" placeholder="Enter Password..." style="width: 100%; text-align: center; margin-top: 5px;">
+            <div id="lock-error-msg" style="color: #ff8088; font-size: 11px; display: none;">Invalid Password.</div>
+            <button id="lock-unlock-btn" type="button">Unlock</button>
+        </div>
+    </div>
+
+    <script>
+        function exitFullscreenIfActive() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log("Fullscreen exit error:", err));
+            }
+        }
+
+        // --- Password Hash Management (PHP Backend Integration) ---
+        let requiredPasswordHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // Default: "1234"
+
+        // Fetch saved password hash from PHP server on startup
+        async function loadSavedPasswordHash() {
+            try {
+                const response = await fetch('save_password.php');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.hash) {
+                        requiredPasswordHash = data.hash;
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not reach save_password.php backend. Using default hash.", err);
+            }
+        }
+        loadSavedPasswordHash();
+
+        async function hashPassword(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- Options Modal Controls ---
+        const optionsGearBtn = document.getElementById('options-gear-btn');
+        const optionsModal = document.getElementById('options-modal');
+        const optionsCloseBtn = document.getElementById('options-close-btn');
+        const matrixToggle = document.getElementById('matrix-toggle');
+        const dataStreamCanvas = document.getElementById('data-stream-canvas');
+        const timeSlider = document.getElementById('time-slider');
+        const sliderTimeVal = document.getElementById('slider-time-val');
+        const newPasswordInput = document.getElementById('new-password-input');
+        const savePasswordBtn = document.getElementById('save-password-btn');
+        const optionsSavedMsg = document.getElementById('options-saved-msg');
+
+        optionsGearBtn.addEventListener('click', () => {
+            optionsModal.style.display = 'flex';
+        });
+
+        optionsCloseBtn.addEventListener('click', () => {
+            optionsModal.style.display = 'none';
+        });
+
+        matrixToggle.addEventListener('change', () => {
+            if (matrixToggle.checked) {
+                dataStreamCanvas.style.opacity = '0.75';
+                document.body.classList.remove('matrix-off');
+            } else {
+                dataStreamCanvas.style.opacity = '0';
+                document.body.classList.add('matrix-off');
+            }
+        });
+
+        timeSlider.addEventListener('input', () => {
+            const mins = timeSlider.value;
+            sliderTimeVal.innerText = `${mins} mins`;
+            
+            totalDuration = mins * 60;
+            const remainingSeconds = Math.max(0, Math.floor(totalDuration - elapsedTime));
+            const displayMins = Math.floor(remainingSeconds / 60);
+            const displaySecs = remainingSeconds % 60;
+            document.getElementById('time-remaining').innerText = 
+                `Estimated time remaining: ${String(displayMins).padStart(2, '0')}:${String(displaySecs).padStart(2, '0')}`;
+        });
+
+        // Save New Password Handler (PHP Background Request)
+        savePasswordBtn.addEventListener('click', async () => {
+            const val = newPasswordInput.value.trim();
+            if (val) {
+                const newHash = await hashPassword(val);
+
+                try {
+                    const response = await fetch('save_password.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ hash: newHash })
+                    });
+
+                    if (response.ok) {
+                        requiredPasswordHash = newHash;
+                        newPasswordInput.value = '';
+                        optionsSavedMsg.style.display = 'block';
+                        setTimeout(() => { optionsSavedMsg.style.display = 'none'; }, 2500);
+                    } else {
+                        alert("Server error: Unable to save password.");
+                    }
+                } catch (err) {
+                    console.error("PHP Background Request Failed:", err);
+                    alert("Network error: Could not reach save_password.php");
+                }
+            }
+        });
+
+        // --- Mute Toggle Control ---
+        let isMuted = false;
+        const muteToggleBtn = document.getElementById('mute-toggle-btn');
+        muteToggleBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteToggleBtn.innerText = isMuted ? "🔇 Muted" : "🔊 Sound On";
+        });
+
+        // --- Side Panel Web Browser & DTC Decoder Handlers ---
+        const browserUrlInput = document.getElementById('browser-url-input');
+        const browserGoBtn = document.getElementById('browser-go-btn');
+        const browserSidePanel = document.getElementById('browser-side-panel');
+        const browserCloseBtn = document.getElementById('browser-close-btn');
+        const browserFrame = document.getElementById('browser-frame');
+        const portalWrapper = document.getElementById('portal-wrapper');
+        const processWrapper = document.getElementById('process-wrapper');
+
+        const dtcInput = document.getElementById('dtc-input');
+        const dtcBtn = document.getElementById('dtc-btn');
+        const dtcResult = document.getElementById('dtc-result');
+
+        const commonDtcCodes = {
+            "P0101": "Mass Air Flow (MAF) Circuit Range/Performance Problem",
+            "P0300": "Random/Multiple Cylinder Misfire Detected",
+            "P0420": "Catalyst System Efficiency Below Threshold (Bank 1)",
+            "P0299": "Turbocharger/Supercharger Underboost Condition",
+            "P2015": "Intake Manifold Flap Position Sensor/Switch Circuit Range/Performance"
+        };
+
+        dtcBtn.addEventListener('click', () => {
+            const code = dtcInput.value.trim().toUpperCase();
+            if (!code) return;
+            const desc = commonDtcCodes[code] || "Custom / Unknown OEM Diagnostic Trouble Code";
+            dtcResult.innerText = `[${code}]: ${desc}`;
+            dtcResult.style.display = 'block';
+        });
+
+        function loadWebUrl() {
+            let url = browserUrlInput.value.trim();
+            if (!url) return;
+
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+                browserUrlInput.value = url;
+            }
+
+            browserFrame.src = url;
+            browserSidePanel.classList.add('open');
+        }
+
+        browserGoBtn.addEventListener('click', loadWebUrl);
+        browserUrlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadWebUrl();
+            }
+        });
+
+        browserCloseBtn.addEventListener('click', () => {
+            browserSidePanel.classList.remove('open');
+        });
+
+        // --- ECU Preset Auto-Fill Logic ---
+        const ecuPresetSelect = document.getElementById('ecu-preset-select');
+        ecuPresetSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (selected.value) {
+                document.getElementById('user-ecu-type').value = selected.dataset.type || '';
+                document.getElementById('user-input').value = selected.dataset.make || '';
+                document.getElementById('user-input-2').value = selected.dataset.model || '';
+                document.getElementById('user-input-3').value = selected.dataset.engine || '';
+            }
+        });
+
+        // --- Audio Sound Chime Generator ---
+        function playTaskCompleteSound() {
+            if (isMuted) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const audioCtx = new AudioCtx();
+
+                const playNote = (freq, startTime, duration) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + startTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(audioCtx.currentTime + startTime);
+                    osc.stop(audioCtx.currentTime + startTime + duration);
+                };
+
+                playNote(523.25, 0, 0.2);
+                playNote(880.00, 0.12, 0.4);
+            } catch (err) {
+                console.log("Audio chime error:", err);
+            }
+        }
+
+        // --- Checksum & Interactive Drag and Drop Zone ---
+        const ecuFileInput = document.getElementById('ecu-file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const dropZoneLabel = document.getElementById('drop-zone-label');
+        const checksumInfoBox = document.getElementById('checksum-info-box');
+        const checksumHashVal = document.getElementById('checksum-hash-val');
+        const hexDialogOverlay = document.getElementById('hex-dialog-overlay');
+        const hexDumpContent = document.getElementById('hex-dump-content');
+        const openHexBtn = document.getElementById('open-hex-btn');
+        const hexCloseBtn = document.getElementById('hex-close-btn');
+
+        let calculatedHash = "";
+        let loadedFile = null;
+
+        dropZone.addEventListener('click', () => ecuFileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                ecuFileInput.files = e.dataTransfer.files;
+                processUploadedFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        ecuFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                processUploadedFile(this.files[0]);
+            }
+        });
+
+        async function processUploadedFile(file) {
+            loadedFile = file;
+            dropZoneLabel.innerHTML = `Loaded: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)`;
+            
+            const fnLower = file.name.toLowerCase();
+            const makeInput = document.getElementById('user-input');
+            if (!makeInput.value) {
+                if (fnLower.includes('bmw')) makeInput.value = 'BMW';
+                else if (fnLower.includes('audi')) makeInput.value = 'Audi';
+                else if (fnLower.includes('vw') || fnLower.includes('volkswagen') || fnLower.includes('golf')) makeInput.value = 'Volkswagen';
+                else if (fnLower.includes('merc') || fnLower.includes('benz') || fnLower.includes('amg')) makeInput.value = 'Mercedes-Benz';
+                else if (fnLower.includes('porsche')) makeInput.value = 'Porsche';
+                else if (fnLower.includes('ford')) makeInput.value = 'Ford';
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            calculatedHash = "MD5: " + hashHex.substring(0, 32).toUpperCase();
+            checksumHashVal.innerText = calculatedHash;
+            checksumInfoBox.style.display = 'block';
+        }
+
+        openHexBtn.addEventListener('click', async () => {
+            if (!loadedFile) return;
+            hexDialogOverlay.style.display = 'flex';
+            hexDumpContent.innerText = "Reading binary bytes...";
+
+            const buffer = await loadedFile.slice(0, 256).arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            let hexOutput = "ADDR   00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F\n";
+            hexOutput += "-----------------------------------------------------\n";
+
+            bytes.forEach((byte, idx) => {
+                if (idx % 16 === 0) {
+                    hexOutput += "0x" + idx.toString(16).padStart(4, '0').toUpperCase() + "  ";
+                }
+                hexOutput += byte.toString(16).padStart(2, '0').toUpperCase() + " ";
+                if ((idx + 1) % 16 === 0) hexOutput += "\n";
+            });
+
+            hexDumpContent.innerText = hexOutput;
+        });
+
+        hexCloseBtn.addEventListener('click', () => {
+            hexDialogOverlay.style.display = 'none';
+        });
+
+        // --- Server Status Ping Loop ---
+        const SERVER_URL = 'http://bweller91.ddns.net/';
+        const serverStatusBox = document.getElementById('server-status-box');
+        const serverStatusDot = document.getElementById('server-status-dot');
+        const serverStatusText = document.getElementById('server-status-text');
+        const serverLatencyText = document.getElementById('server-latency-text');
+        const serverTimeText = document.getElementById('server-time-text');
+
+        function updateServerClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            serverTimeText.innerText = `${hours}:${minutes}:${seconds}`;
+        }
+        updateServerClock();
+        setInterval(updateServerClock, 1000);
+
+        async function checkServerStatus() {
+            const startTime = performance.now();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+            try {
+                await fetch(SERVER_URL, {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-store',
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const latency = Math.round(performance.now() - startTime);
+                setServerOnline(true, latency);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                checkServerStatusFallback(startTime);
+            }
+        }
+
+        function checkServerStatusFallback(startTime) {
+            const img = new Image();
+            let isResponded = false;
+            const timeout = setTimeout(() => {
+                if (!isResponded) {
+                    isResponded = true;
+                    setServerOnline(false, 0);
+                }
+            }, 3000);
+
+            img.onload = img.onerror = () => {
+                if (!isResponded) {
+                    isResponded = true;
+                    clearTimeout(timeout);
+                    const latency = Math.round(performance.now() - startTime);
+                    setServerOnline(true, latency);
+                }
+            };
+            img.src = SERVER_URL + '?ping=' + Date.now();
+        }
+
+        function setServerOnline(isOnline, latencyMs) {
+            if (isOnline) {
+                serverStatusBox.classList.remove('offline');
+                serverStatusDot.classList.remove('offline');
+                serverStatusText.innerText = 'Server Online';
+                serverLatencyText.innerText = `${latencyMs} ms`;
+            } else {
+                serverStatusBox.classList.add('offline');
+                serverStatusDot.classList.add('offline');
+                serverStatusText.innerText = 'Server Offline';
+                serverLatencyText.innerText = '-- ms';
+            }
+        }
+
+        checkServerStatus();
+        setInterval(checkServerStatus, 10000);
+
+        // --- Data Stream Background Canvas ---
+        const canvas = document.getElementById('data-stream-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const particles = [];
+        const particleCount = 120; 
+        const binaryAndHex = "0101010101101010101ABCDEF";
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                speed: 1.5 + Math.random() * 3.5,
+                length: 8 + Math.floor(Math.random() * 14),
+                char: binaryAndHex[Math.floor(Math.random() * binaryAndHex.length)],
+                size: 11 + Math.random() * 7,
+                isHighlight: Math.random() > 0.8
+            });
+        }
+
+        function drawDataStream() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                ctx.font = `bold ${p.size}px monospace`;
+                ctx.shadowBlur = p.isHighlight ? 12 : 6;
+                ctx.shadowColor = "#00ff66";
+                
+                for (let j = 0; j < p.length; j++) {
+                    const charToDraw = binaryAndHex[(p.char.charCodeAt(0) + j) % binaryAndHex.length];
+                    const alpha = (1 - (j / p.length)) * 0.95;
+                    
+                    if (j === 0) {
+                        ctx.fillStyle = p.isHighlight ? "#ffffff" : "#66ff99";
+                    } else {
+                        ctx.fillStyle = `rgba(0, 255, 102, ${alpha})`;
+                    }
+                    
+                    ctx.fillText(charToDraw, p.x, p.y - (j * 15));
+                }
+
+                p.y -= p.speed;
+                if (p.y < -100) {
+                    p.y = canvas.height + 100;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+
+            requestAnimationFrame(drawDataStream);
+        }
+        drawDataStream();
+
+        // --- Application Handlers ---
+        const submitBtn = document.getElementById('submit-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const returnBtn = document.getElementById('return-btn');
+        const printBtn = document.getElementById('print-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const inputScreen = document.getElementById('input-screen');
+        const processScreen = document.getElementById('process-screen');
+        const summaryScreen = document.getElementById('summary-screen');
+        const statusText = document.getElementById('status-text');
+        const progressBar = document.getElementById('progress-bar');
+        const lockProgressBar = document.getElementById('lock-progress-bar');
+        const lockProgressPercent = document.getElementById('lock-progress-percent');
+        const timeRemaining = document.getElementById('time-remaining');
+        const terminalOutput = document.getElementById('terminal-output');
+        
+        const dialogOverlay = document.getElementById('dialog-overlay');
+        const dialogContinueBtn = document.getElementById('dialog-continue-btn');
+        const cancelDialogOverlay = document.getElementById('cancel-dialog-overlay');
+        const cancelConfirmBtn = document.getElementById('cancel-confirm-btn');
+        const successDialogOverlay = document.getElementById('success-dialog-overlay');
+        const successConfirmBtn = document.getElementById('success-confirm-btn');
+
+        const lockDialogOverlay = document.getElementById('lock-dialog-overlay');
+        const lockPasswordInput = document.getElementById('lock-password-input');
+        const lockUnlockBtn = document.getElementById('lock-unlock-btn');
+        const lockErrorMsg = document.getElementById('lock-error-msg');
+
+        const userEcuType = document.getElementById('user-ecu-type');
+        const userInput1 = document.getElementById('user-input');
+        const userInput2 = document.getElementById('user-input-2');
+        const userInput3 = document.getElementById('user-input-3');
+        const userPassword = document.getElementById('user-password');
+
+        const displayEcuType = document.getElementById('display-ecu-type');
+        const displayMake = document.getElementById('display-make');
+        const displayModel = document.getElementById('display-model');
+        const displayEngine = document.getElementById('display-engine');
+        const dialogFilename = document.getElementById('dialog-filename');
+        const errorBanner = document.getElementById('error-banner');
+
+        const sumFilename = document.getElementById('sum-filename');
+        const sumChecksum = document.getElementById('sum-checksum');
+        const sumEcuType = document.getElementById('sum-ecu-type');
+        const sumMake = document.getElementById('sum-make');
+        const sumModel = document.getElementById('sum-model');
+        const sumEngine = document.getElementById('sum-engine');
+        const sumTimer = document.getElementById('sum-timer');
+
+        let totalDuration = 0;
+        let elapsedTime = 0;
+        let processStartTime = 0;
+        let mainTimer = null;
+        let dialogTimeout = null;
+        let connectionTimeout = null;
+        let catalogScanInterval = null;
+        let isLocked = false;
+        let isProcessingSession = false;
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        });
+
+        function updateStatusPhase(percent) {
+            if (percent < 15) return "Downloading file to computer ...";
+            if (percent < 40) return "Reading ECU memory maps & parameters...";
+            if (percent < 70) return "Searching database for matching signatures...";
+            if (percent < 98) return "Downloading patch data & writing sector blocks...";
+            return "Finalizing verification checks. Complete.";
+        }
+
+        function generateHexLine() {
+            let hexString = "";
+            const hexChars = "0123456789ABCDEF";
+            for (let i = 0; i < 32; i++) {
+                hexString += hexChars[Math.floor(Math.random() * hexChars.length)];
+                if (i % 2 === 1) hexString += " ";
+            }
+            const memoryAddresses = ["0x4FA0", "0x7B12", "0x9C40", "0x2E18", "0xFF02", "0x11A4", "0x88CC"];
+            const addr = memoryAddresses[Math.floor(Math.random() * memoryAddresses.length)];
+            return `READ MEM [${addr}] -> DATA: ${hexString.trim()}`;
+        }
+
+        function appendTerminalLine(text) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerText = "> " + text;
+            terminalOutput.appendChild(line);
+            
+            while (terminalOutput.children.length > 5) {
+                terminalOutput.removeChild(terminalOutput.firstChild);
+            }
+        }
+
+        const vehicleCatalogs = {
+            "BMW": [
+                "BMW 1 Series E87 / F20 120d 177hp",
+                "BMW 2 Series F22 M240i 3.0T",
+                "BMW 3 Series E36 328i M52",
+                "BMW 3 Series E46 M3 3.2L S54",
+                "BMW 3 Series E90 / E92 335i N54 Twin Turbo",
+                "BMW 3 Series E90 330d M57 235hp",
+                "BMW 3 Series F30 320i N20",
+                "BMW 3 Series G20 M340i xDrive",
+                "BMW 4 Series F32 435i N55",
+                "BMW 5 Series E39 530d M57",
+                "BMW 5 Series E60 535d M57TU2 286hp",
+                "BMW 5 Series F10 530d N57",
+                "BMW M2 Competition F87 S55",
+                "BMW M3 F80 3.0 BiTurbo",
+                "BMW M4 G82 S58",
+                "BMW M5 F10 V8 TwinTurbo S63",
+                "BMW X5 E70 3.0d SD",
+                "BMW X5 F15 40d N57S"
+            ],
+            "AUDI": [
+                "Audi A3 8P 2.0 TDI 140hp Bosch EDC16",
+                "Audi S3 8V 2.0 TFSI Simos 18.1",
+                "Audi RS3 8V 2.5 TFSI DAZA",
+                "Audi A4 B8 2.0 TDI 170hp CAHA",
+                "Audi S4 B9 3.0 TFSI CWGD",
+                "Audi RS4 B9 2.9 TFSI TwinTurbo",
+                "Audi A6 C7 3.0 TDI BiTDI 313hp",
+                "Audi RS6 C8 4.0 TFSI V8",
+                "Audi TT RS 8S 2.5 TFSI EA855",
+                "Audi R8 5.2 FSI V10 MED17.1.1"
+            ],
+            "VOLKSWAGEN": [
+                "VW Golf MK5 GTI 2.0 TFSI MED9.1",
+                "VW Golf MK6 GTI 2.0 TSI MED17.5",
+                "VW Golf MK7 GTI 2.0 TSI Simos 18.1",
+                "VW Golf MK7 R 2.0 TSI Simos 18.2",
+                "VW Golf MK8 R 2.0 TSI Continental Simos 19",
+                "VW Passat B8 2.0 TDI BiTDI 240hp",
+                "VW Scirocco R 2.0 TFSI EA113",
+                "VW Transporter T6 2.0 TDI Bosch EDC17"
+            ],
+            "MERCEDES-BENZ": [
+                "Mercedes A45 AMG W176 2.0T M133",
+                "Mercedes C220 CDI W204 Delphi CRD2",
+                "Mercedes C350 CDI W204 V6 OM642",
+                "Mercedes C63 AMG W204 6.2L V8 M156",
+                "Mercedes C63s AMG W205 4.0L V8 M177",
+                "Mercedes E350 CDI W212 V6 OM642",
+                "Mercedes E63s AMG W213 4.0 BiTurbo",
+                "Mercedes GT AMG 4.0L V8 M178"
+            ],
+            "PORSCHE": [
+                "Porsche 911 997 Carrera S 3.8L ME7.8",
+                "Porsche 911 991 GT3 3.8L DFI",
+                "Porsche 911 991 Turbo S 3.8T SDI9",
+                "Porsche 718 Cayman S 2.5T SDI21",
+                "Porsche Macan GTS 3.0 BiTurbo",
+                "Porsche Panamera Turbo 4.0 V8"
+            ],
+            "FORD": [
+                "Ford Fiesta ST180 1.6 EcoBoost MED17.0.1",
+                "Ford Fiesta ST200 1.6 EcoBoost",
+                "Ford Focus ST225 2.5T Bosch ME9.0",
+                "Ford Focus ST250 2.0 EcoBoost",
+                "Ford Focus RS MK3 2.3 EcoBoost Bosch MED17",
+                "Ford Mustang GT 5.0 V8 Coyote PCM"
+            ]
+        };
+
+        function detectManufacturerName() {
+            let inputMake = userInput1.value.trim().toUpperCase();
+            let fileName = loadedFile ? loadedFile.name.toUpperCase() : (ecuFileInput.files.length > 0 ? ecuFileInput.files[0].name.toUpperCase() : "");
+            let ecuTypeStr = userEcuType.value.trim().toUpperCase();
+
+            let combinedText = `${inputMake} ${fileName} ${ecuTypeStr}`;
+
+            if (combinedText.includes("BMW")) return "BMW";
+            if (combinedText.includes("AUDI")) return "AUDI";
+            if (combinedText.includes("VW") || combinedText.includes("VOLKSWAGEN") || combinedText.includes("GOLF") || combinedText.includes("SIMOS")) return "VOLKSWAGEN";
+            if (combinedText.includes("MERC") || combinedText.includes("BENZ") || combinedText.includes("AMG")) return "MERCEDES-BENZ";
+            if (combinedText.includes("PORSCHE")) return "PORSCHE";
+            if (combinedText.includes("FORD")) return "FORD";
+
+            return inputMake || "GENERIC VEHICLE";
+        }
+
+        function startVehicleCatalogScan() {
+            const make = detectManufacturerName();
+            const catalogList = vehicleCatalogs[make] || [
+                `${make} 1.6L 16V Turbo Map Catalog`,
+                `${make} 2.0L TDI Engine Map Index`,
+                `${make} 2.0T TFSI Calibration Registry`,
+                `${make} 3.0L V6 Twin-Turbo Map Database`,
+                `${make} Performance ECU Variant Catalog #412`,
+                `${make} OEM Software Revision Index #992`
+            ];
+
+            let index = 0;
+            appendTerminalLine(`[CATALOG] Initializing ${make} Vehicle Model Database...`);
+
+            catalogScanInterval = setInterval(() => {
+                if (index >= catalogList.length) index = 0;
+                const modelEntry = catalogList[index];
+                appendTerminalLine(`[CATALOG SCAN] Searching ${make}: ${modelEntry}... [NO MATCH]`);
+                statusText.innerText = `Searching catalog: ${modelEntry}...`;
+                index++;
+            }, 800);
+        }
+
+        function clearFormInputs() {
+            ecuFileInput.value = '';
+            loadedFile = null;
+            dropZoneLabel.innerHTML = `Drag & Drop ECU Dump File or <strong>Browse</strong>`;
+            userEcuType.value = '';
+            userInput1.value = '';
+            userInput2.value = '';
+            userInput3.value = '';
+            userPassword.value = '';
+            ecuPresetSelect.value = '';
+            browserUrlInput.value = '';
+            browserFrame.src = 'about:blank';
+            browserSidePanel.classList.remove('open');
+            checksumInfoBox.style.display = 'none';
+            errorBanner.style.display = 'none';
+        }
+
+        function resetAllTimersAndState() {
+            if (mainTimer) clearInterval(mainTimer);
+            if (dialogTimeout) clearTimeout(dialogTimeout);
+            if (connectionTimeout) clearTimeout(connectionTimeout);
+            if (catalogScanInterval) clearInterval(catalogScanInterval);
+
+            exitFullscreenIfActive();
+
+            elapsedTime = 0;
+            totalDuration = 0;
+            processStartTime = 0;
+            isLocked = false;
+            isProcessingSession = false;
+            
+            progressBar.style.width = '0%';
+            lockProgressBar.style.width = '0%';
+            lockProgressPercent.innerText = '0%';
+            terminalOutput.innerHTML = '';
+            dialogOverlay.style.display = 'none';
+            cancelDialogOverlay.style.display = 'none';
+            successDialogOverlay.style.display = 'none';
+            lockDialogOverlay.style.display = 'none';
+            hexDialogOverlay.style.display = 'none';
+            optionsModal.style.display = 'none';
+            
+            portalWrapper.appendChild(browserSidePanel);
+
+            processWrapper.style.display = 'none';
+            summaryScreen.style.display = 'none';
+            portalWrapper.style.display = 'flex';
+        }
+
+        function triggerCancel() {
+            if (processWrapper.style.display === 'flex' || dialogOverlay.style.display === 'flex') {
+                cancelDialogOverlay.style.display = 'flex';
+            }
+        }
+
+        function startMainTimer() {
+            const intervalTime = 200;
+            const increment = intervalTime / 1000;
+            let terminalTick = 0;
+
+            mainTimer = setInterval(() => {
+                elapsedTime += increment;
+
+                if (elapsedTime >= totalDuration) {
+                    elapsedTime = totalDuration;
+                    clearInterval(mainTimer);
+                    statusText.innerText = "Data Synchronization Complete.";
+                    appendTerminalLine("PROCESS FINISHED. SYSTEM SECURE.");
+                    
+                    playTaskCompleteSound();
+                    successDialogOverlay.style.display = 'flex';
+                }
+
+                const percentage = Math.min(100, (elapsedTime / totalDuration) * 100);
+                progressBar.style.width = percentage + '%';
+                lockProgressBar.style.width = percentage + '%';
+                lockProgressPercent.innerText = Math.floor(percentage) + '%';
+                
+                statusText.innerText = updateStatusPhase(percentage);
+
+                terminalTick++;
+                if (terminalTick % 3 === 0) {
+                    appendTerminalLine(generateHexLine());
+                }
+
+                const remainingSeconds = Math.max(0, Math.floor(totalDuration - elapsedTime));
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                timeRemaining.innerText = `Estimated time remaining: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, intervalTime);
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            if (ecuFileInput.files.length === 0 && !loadedFile) {
+                errorBanner.innerText = "Please select a file to continue";
+                errorBanner.style.display = 'block';
+                return;
+            }
+
+            const inputHash = await hashPassword(userPassword.value.trim());
+            if (inputHash !== requiredPasswordHash) {
+                errorBanner.innerText = "Invalid Password! Access Denied.";
+                errorBanner.style.display = 'block';
+                return;
+            }
+
+            errorBanner.style.display = 'none';
+            exitFullscreenIfActive();
+
+            if (browserUrlInput.value.trim()) {
+                loadWebUrl();
+            }
+
+            processStartTime = Date.now();
+            isProcessingSession = true;
+
+            const searchTimeSec = Math.floor(Math.random() * (60 - 18 + 1)) + 18;
+            
+            totalDuration = parseInt(timeSlider.value, 10) * 60;
+
+            const initialMins = Math.floor(totalDuration / 60);
+            const initialSecs = totalDuration % 60;
+            timeRemaining.innerText = `Estimated time remaining: ${String(initialMins).padStart(2, '0')}:${String(initialSecs).padStart(2, '0')}`;
+
+            processWrapper.appendChild(browserSidePanel);
+
+            portalWrapper.style.display = 'none';
+            processWrapper.style.display = 'flex';
+            statusText.innerText = "Searching database...";
+
+            startVehicleCatalogScan();
+
+            dialogTimeout = setTimeout(() => {
+                if (catalogScanInterval) clearInterval(catalogScanInterval);
+
+                const detectedMake = detectManufacturerName();
+                appendTerminalLine(`[MATCH CONFIRMED] Vehicle Model Found in ${detectedMake} Database!`);
+
+                dialogFilename.innerText = `File: ${loadedFile ? loadedFile.name : ecuFileInput.files[0].name}`;
+                displayEcuType.innerText = userEcuType.value.trim() || '[N/A]';
+                displayMake.innerText = userInput1.value.trim() || detectedMake;
+                displayModel.innerText = userInput2.value.trim() || '[N/A]';
+                displayEngine.innerText = userInput3.value.trim() || '[N/A]';
+
+                dialogOverlay.style.display = 'flex';
+            }, searchTimeSec * 1000);
+        });
+
+        dialogContinueBtn.addEventListener('click', () => {
+            dialogOverlay.style.display = 'none';
+            statusText.innerText = "Connecting to database for file download...";
+            appendTerminalLine("Connecting to database for file download...");
+
+            connectionTimeout = setTimeout(() => {
+                if (loadedFile || ecuFileInput.files.length > 0) {
+                    appendTerminalLine(`LOADED FILE: ${loadedFile ? loadedFile.name : ecuFileInput.files[0].name}`);
+                }
+                startMainTimer();
+            }, 14000);
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (!isProcessingSession) return;
+
+            if (document.activeElement === lockPasswordInput || document.activeElement === browserUrlInput || document.activeElement === dtcInput || document.activeElement === newPasswordInput) {
+                if (event.key === 'Enter' && document.activeElement === lockPasswordInput) unlockApp();
+                return;
+            }
+
+            const key = event.key.toLowerCase();
+            if (key === 'c') {
+                triggerCancel();
+                return;
+            }
+
+            if (key === 'f') {
+                if (processWrapper.style.display === 'flex' || dialogOverlay.style.display === 'flex') {
+                    playTaskCompleteSound();
+                    successDialogOverlay.style.display = 'flex';
+                }
+                return;
+            }
+
+            if (!isLocked) {
+                isLocked = true;
+                lockErrorMsg.style.display = 'none';
+                lockPasswordInput.value = '';
+                lockDialogOverlay.style.display = 'flex';
+                setTimeout(() => lockPasswordInput.focus(), 100);
+            }
+        });
+
+        async function unlockApp() {
+            const inputHash = await hashPassword(lockPasswordInput.value);
+            if (inputHash === requiredPasswordHash) {
+                isLocked = false;
+                lockDialogOverlay.style.display = 'none';
+            } else {
+                lockErrorMsg.style.display = 'block';
+            }
+        }
+
+        lockUnlockBtn.addEventListener('click', unlockApp);
+
+        successConfirmBtn.addEventListener('click', () => {
+            exitFullscreenIfActive();
+
+            successDialogOverlay.style.display = 'none';
+            processWrapper.style.display = 'none';
+            dialogOverlay.style.display = 'none';
+            
+            let timeTakenSecs = processStartTime > 0 ? Math.floor((Date.now() - processStartTime) / 1000) : 0;
+            const mins = String(Math.floor(timeTakenSecs / 60)).padStart(2, '0');
+            const secs = String(timeTakenSecs % 60).padStart(2, '0');
+
+            sumFilename.innerText = loadedFile ? loadedFile.name : (ecuFileInput.files.length > 0 ? ecuFileInput.files[0].name : '[No file uploaded]');
+            sumChecksum.innerText = calculatedHash || '[N/A]';
+            sumEcuType.innerText = userEcuType.value.trim() || '[N/A]';
+            sumMake.innerText = userInput1.value.trim() || detectManufacturerName();
+            sumModel.innerText = userInput2.value.trim() || '[N/A]';
+            sumEngine.innerText = userInput3.value.trim() || '[N/A]';
+            sumTimer.innerText = `${mins}:${secs}`;
+
+            summaryScreen.style.display = 'flex';
+            isProcessingSession = false;
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const logData = {
+                timestamp: new Date().toISOString(),
+                file: sumFilename.innerText,
+                checksum: sumChecksum.innerText,
+                ecuType: sumEcuType.innerText,
+                make: sumMake.innerText,
+                model: sumModel.innerText,
+                engine: sumEngine.innerText,
+                durationSecs: sumTimer.innerText,
+                status: "COMPLETED_SUCCESS"
+            };
+
+            const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ECU_Log_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        printBtn.addEventListener('click', () => window.print());
+        cancelBtn.addEventListener('click', triggerCancel);
+        cancelConfirmBtn.addEventListener('click', resetAllTimersAndState);
+        returnBtn.addEventListener('click', resetAllTimersAndState);
+        resetBtn.addEventListener('click', clearFormInputs);
+    </script>
+</body>
+</html>
